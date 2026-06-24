@@ -97,10 +97,20 @@ git pull
 gcloud run deploy silva-activity-portal --source . --region europe-west2 --allow-unauthenticated
 ```
 
-**Take offline:**
+**Take offline (stop accepting requests):**
 
 ```
 gcloud run services update silva-activity-portal --no-allow-unauthenticated --region europe-west2
+```
+
+**Take offline (stop ALL charges — disable billing on the project):**
+
+Console → [Billing](https://console.cloud.google.com/billing) → find your billing account → **My projects** tab → three dots next to `silvaactivity` → **Disable billing**.
+
+Or from Cloud Shell:
+
+```
+gcloud beta billing projects unlink silvaactivity
 ```
 
 **Bring back online:**
