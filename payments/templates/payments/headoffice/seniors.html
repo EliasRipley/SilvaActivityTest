@@ -1,0 +1,50 @@
+{% extends "payments/base.html" %}
+{% block title %}Site Seniors{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="mb-0">Site Seniors</h1>
+  <a href="{% url 'headoffice_senior_create' %}" class="btn btn-sc-primary">Add Senior</a>
+</div>
+<p class="text-muted mb-4">Manage site senior accounts.</p>
+
+{% if seniors %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-stack-xs">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Site</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in seniors %}
+            <tr>
+              <td data-label="Name">{{ s.user.get_full_name|default:s.user.username }}</td>
+              <td data-label="Email">{{ s.user.email }}</td>
+              <td data-label="Site">{{ s.site.name }}</td>
+              <td>
+                <a href="{% url 'headoffice_senior_delete' s.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove {{ s.user.get_full_name }}? Their login will be deleted.')">Remove</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-sc-info">No site seniors yet. <a href="{% url 'headoffice_senior_create' %}">Add one</a>.</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body">
+    <h6 class="card-title">About Site Seniors</h6>
+    <p class="card-text small text-muted mb-0">
+      Site seniors can log in at <strong>/site/dashboard/</strong> to manage their site's activities and view payments.
+      Create an account for each senior and give them their email and password.
+    </p>
+  </div>
+</div>
+{% endblock %}

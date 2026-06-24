@@ -1,0 +1,107 @@
+{% extends "payments/base.html" %}
+{% block title %}Enter Card Details{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">All Sites</a></li>
+        {% if activity.site %}
+          <li class="breadcrumb-item"><a href="{% url 'site_activities' activity.site.slug %}">{{ activity.site.name }}</a></li>
+        {% else %}
+          <li class="breadcrumb-item"><a href="{% url 'company_wide_activities' %}">Silva Care Wide</a></li>
+        {% endif %}
+        <li class="breadcrumb-item"><a href="{% url 'activity_pay' activity.id %}">Details</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Pay</li>
+      </ol>
+    </nav>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h2 class="card-title fw-bold mb-3">Enter Card Details</h2>
+
+        <div class="bg-sc-teal-light rounded p-3 mb-4">
+          <div class="row small text-muted mb-1">
+            <div class="col-5">Activity:</div>
+            <div class="col-7 fw-medium text-dark">{{ activity.name }}</div>
+          </div>
+          <div class="row small text-muted mb-1">
+            <div class="col-5">Site:</div>
+            <div class="col-7 fw-medium text-dark">{{ activity.display_site_name }}</div>
+          </div>
+          <div class="row small text-muted mb-1">
+            <div class="col-5">Attendee:</div>
+            <div class="col-7 fw-medium text-dark">{{ service_user_name }}</div>
+          </div>
+          <hr class="my-2">
+          <div class="row">
+            <div class="col-5 fw-semibold">Amount to pay:</div>
+            <div class="col-7 fw-bold text-sc-teal fs-5">&pound;{{ activity.price_pounds|floatformat:2 }}</div>
+          </div>
+        </div>
+
+        <form id="payment-form">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Card details</label>
+            <div id="payment-element" class="p-3 border rounded bg-white">
+            </div>
+          </div>
+          <div id="payment-error" class="alert alert-danger d-none"></div>
+          <div class="d-grid gap-2">
+            <button id="submit-btn" class="btn btn-sc-primary btn-lg">
+              <span id="spinner" class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+              Pay &pound;{{ activity.price_pounds|floatformat:2 }}
+            </button>
+          </div>
+          <p class="text-center text-muted small mt-3">
+            <a href="{% url 'payment_cancelled' %}" class="text-decoration-none">Cancel and go back</a>
+          </p>
+        </form>
+
+        <p class="text-center text-muted small mt-2 mb-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+          Your payment is processed securely by <strong>Stripe</strong>. We do not store your card details.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe("{{ stripe_public_key }}");
+  const clientSecret = "{{ client_secret }}";
+
+  const elements = stripe.elements({ clientSecret });
+  const paymentElement = elements.create("payment");
+  paymentElement.mount("#payment-element");
+
+  const form = document.getElementById("payment-form");
+  const submitBtn = document.getElementById("submit-btn");
+  const spinner = document.getElementById("spinner");
+  const errorEl = document.getElementById("payment-error");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    spinner.classList.remove("d-none");
+    errorEl.classList.add("d-none");
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: "{{ request.scheme }}://{{ request.get_host }}{% url 'payment_success' %}",
+      },
+    });
+
+    if (error) {
+      errorEl.textContent = error.message;
+      errorEl.classList.remove("d-none");
+      submitBtn.disabled = false;
+      spinner.classList.add("d-none");
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "payments/base.html" %}
+{% block title %}{{ site.name }} Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="mb-0">{{ site.name }} Dashboard</h1>
+  <a href="{% url 'site_activity_new' %}" class="btn btn-sc-primary">+ New Activity</a>
+</div>
+<p class="text-muted mb-4">Overview of your activities, payments, and available spaces.</p>
+
+<div class="row g-3 mb-5">
+  <div class="col-md-4">
+    <div class="card stat-card bg-sc-primary text-white shadow-sm">
+      <div class="card-body text-center py-4">
+        <h6 class="text-white-50 text-uppercase small">Your Activities</h6>
+        <span class="display-5 fw-bold">{{ activity_data|length }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card bg-success text-white shadow-sm">
+      <div class="card-body text-center py-4">
+        <h6 class="text-white-50 text-uppercase small">Total Collected</h6>
+        <span class="display-5 fw-bold">&pound;{{ total_paid_pounds|floatformat:0 }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card text-white shadow-sm" style="background-color:var(--sc-teal-bright);">
+      <div class="card-body text-center py-4">
+        <h6 class="text-white-50 text-uppercase small">Recent Payments</h6>
+        <span class="display-5 fw-bold">{{ recent_payments|length }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 class="mb-3">Your Activities at a Glance</h3>
+{% if activity_data %}
+  <div class="table-responsive mb-5">
+    <table class="table table-hover align-middle bg-white rounded shadow-sm table-stack-xs">
+      <thead>
+        <tr>
+          <th>Activity</th>
+          <th>Price</th>
+          <th>Date</th>
+          <th>Capacity</th>
+          <th>Paid</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Payments</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in activity_data %}
+          <tr>
+            <td class="fw-bold" data-label="Activity">
+              {{ item.activity.name }}
+              {% if item.activity.is_company_wide %}
+                <span class="badge bg-sc-teal ms-1">{{ item.activity.display_site_name }}</span>
+              {% endif %}
+            </td>
+            <td data-label="Price">&pound;{{ item.activity.price_pounds|floatformat:2 }}</td>
+            <td data-label="Date">{{ item.activity.start_date|date:"d M Y" }}</td>
+            <td data-label="Capacity">
+              {% if item.activity.has_capacity %}
+                {% if item.spaces_remaining <= 0 %}
+                  <span class="badge bg-danger">Full</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">{{ item.spaces_remaining }} left</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td data-label="Paid">{{ item.paid_count }}</td>
+            <td data-label="Total">&pound;{{ item.total_paid_pounds|floatformat:2 }}</td>
+            <td data-label="Status">
+              {% if item.activity.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td data-label="Payments">
+              {% if item.activity.payment_closes_at %}
+                {% if item.activity.is_payment_closed %}
+                  <span class="badge bg-danger">Closed</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Closes {{ item.activity.payment_closes_at|date:"d M" }}</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'site_activity_edit' item.activity.id %}" class="btn btn-sm btn-outline-sc-primary">Edit</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card shadow-sm border-0 mb-5">
+    <div class="card-body text-center py-4">
+      <p class="text-muted mb-0">No activities yet. <a href="{% url 'site_activity_new' %}">Create one now</a>.</p>
+    </div>
+  </div>
+{% endif %}
+
+<h3 class="mb-3">Recent Payments</h3>
+{% if recent_payments %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle bg-white rounded shadow-sm table-stack-xs">
+      <thead>
+        <tr>
+          <th>Service User</th>
+          <th>Activity</th>
+          <th>Amount</th>
+          <th>Paid At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in recent_payments %}
+          <tr>
+            <td data-label="Service User">{{ p.normalized_name }}</td>
+            <td data-label="Activity">{{ p.activity.name }}</td>
+            <td data-label="Amount">&pound;{{ p.amount_pounds|floatformat:2 }}{% if p.is_test %} <span class="badge bg-warning text-dark">TEST</span>{% endif %}</td>
+            <td data-label="Paid At">{{ p.paid_at|date:"d M Y H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body text-center py-4">
+      <p class="text-muted mb-0">No payments received yet. Payments will appear here once parents and carers pay.</p>
+    </div>
+  </div>
+{% endif %}
+
+<p class="text-muted small mt-4 d-flex flex-wrap gap-2">
+  <a href="{% url 'site_payments' %}" class="btn btn-outline-sc-primary btn-sm">View full payment history &rarr;</a>
+  <a href="{% url 'site_manage_activities' %}" class="btn btn-outline-sc-primary btn-sm">Manage activities &rarr;</a>
+</p>
+{% endblock %}

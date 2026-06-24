@@ -1,0 +1,51 @@
+{% extends "payments/base.html" %}
+{% block title %}
+  {% if activity.is_payment_closed %}Payments Closed{% else %}Fully Booked{% endif %}
+  &ndash; {{ activity.name }}
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6 text-center">
+    <div class="card shadow-sm border-0">
+      <div class="card-body py-5">
+        <div class="display-1 text-warning mb-3">&#9888;</div>
+        {% if activity.is_payment_closed %}
+          <h1 class="fw-bold mb-3">Payments Are Now Closed</h1>
+          <p class="lead text-muted">
+            <strong>{{ activity.name }}</strong> at <strong>{{ activity.display_site_name }}</strong>
+            is no longer accepting payments.
+          </p>
+          <p class="text-muted">
+            The payment closing date for this activity has passed.
+            Please speak to a member of staff if you have any questions.
+          </p>
+        {% else %}
+          <h1 class="fw-bold mb-3">Sorry, This Activity Is Full</h1>
+          <p class="lead text-muted">
+            <strong>{{ activity.name }}</strong> at <strong>{{ activity.display_site_name }}</strong>
+            has no remaining spaces.
+          </p>
+          <p class="text-muted">
+            Places can become available if someone else&rsquo;s payment does not go through.
+            Please check back later, or speak to a member of staff at the site.
+          </p>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+          {% if activity.site %}
+            <a href="{% url 'site_activities' activity.site.slug %}" class="btn btn-sc-primary btn-lg">
+              View Other Activities
+            </a>
+          {% else %}
+            <a href="{% url 'company_wide_activities' %}" class="btn btn-sc-primary btn-lg">
+              View Other Activities
+            </a>
+          {% endif %}
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            Pick a Different Site
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

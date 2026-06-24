@@ -1,0 +1,195 @@
+:root {
+  --sc-teal: #0d7a6e;
+  --sc-teal-dark: #0a5f55;
+  --sc-teal-light: #e8f5f3;
+  --sc-teal-bright: #14a38c;
+  --sc-text: #1a1a2e;
+  --sc-text-muted: #6b7280;
+  --sc-border: #e5e7eb;
+}
+
+body {
+  color: var(--sc-text);
+  background: #f8fafc;
+}
+
+.navbar.bg-sc-primary {
+  background-color: var(--sc-teal) !important;
+}
+
+.bg-sc-primary {
+  background-color: var(--sc-teal) !important;
+}
+
+.btn-sc-primary {
+  --bs-btn-bg: var(--sc-teal);
+  --bs-btn-border-color: var(--sc-teal);
+  --bs-btn-hover-bg: var(--sc-teal-dark);
+  --bs-btn-hover-border-color: var(--sc-teal-dark);
+  --bs-btn-active-bg: var(--sc-teal-dark);
+  --bs-btn-active-border-color: var(--sc-teal-dark);
+  color: #fff;
+}
+
+.btn-outline-sc-primary {
+  --bs-btn-color: var(--sc-teal);
+  --bs-btn-border-color: var(--sc-teal);
+  --bs-btn-hover-bg: var(--sc-teal);
+  --bs-btn-hover-border-color: var(--sc-teal);
+  --bs-btn-active-bg: var(--sc-teal-dark);
+  --bs-btn-active-border-color: var(--sc-teal-dark);
+}
+
+.text-sc-primary {
+  color: var(--sc-teal) !important;
+}
+
+.text-sc-teal {
+  color: var(--sc-teal) !important;
+}
+
+.badge.bg-sc-teal {
+  background-color: var(--sc-teal);
+  color: #fff;
+}
+
+.card.border-sc-teal {
+  border-color: var(--sc-teal) !important;
+}
+
+a.text-sc-primary:hover,
+a.text-sc-primary:focus {
+  color: var(--sc-teal-dark) !important;
+}
+
+.alert-sc-info {
+  --bs-alert-color: var(--sc-teal-dark);
+  --bs-alert-bg: var(--sc-teal-light);
+  --bs-alert-border-color: var(--sc-teal);
+}
+
+.sc-logo-text {
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+
+.sc-logo-text small {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+footer a {
+  color: var(--sc-teal);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--sc-teal-dark);
+  text-decoration: underline;
+}
+
+/* Card hover effect for site selection */
+.card-site {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.card-site:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(13, 122, 110, 0.12) !important;
+}
+
+/* Activity cards */
+.card-activity .badge-sc-site {
+  font-size: 0.6rem;
+  vertical-align: middle;
+}
+
+/* Stat cards */
+.stat-card {
+  border: none;
+  border-radius: 0.75rem;
+}
+
+/* Mobile-friendly tables: show as cards on very small screens */
+@media (max-width: 575.98px) {
+  .table-stack-xs {
+    display: block;
+  }
+
+  .table-stack-xs thead {
+    display: none;
+  }
+
+  .table-stack-xs tbody,
+  .table-stack-xs tr,
+  .table-stack-xs td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-stack-xs tr {
+    background: #fff;
+    border: 1px solid var(--sc-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .table-stack-xs td {
+    border: none;
+    padding: 0.25rem 0;
+    text-align: right;
+  }
+
+  .table-stack-xs td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    color: var(--sc-text-muted);
+    font-size: 0.8125rem;
+  }
+}
+
+/* Better readability on small screens */
+@media (max-width: 767.98px) {
+  .display-5 {
+    font-size: 2rem;
+  }
+
+  .display-6 {
+    font-size: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Stripe payment element styling */
+#payment-element {
+  min-height: 180px;
+}
+
+/* Improve contrast on muted text */
+small.text-muted,
+.text-muted.small {
+  color: var(--sc-text-muted) !important;
+}
+
+/* Breadcrumb tweaks */
+.breadcrumb {
+  background: transparent;
+  padding: 0;
+}
+
+/* Footer */
+.footer-sc {
+  border-top: 1px solid var(--sc-border);
+  font-size: 0.875rem;
+}

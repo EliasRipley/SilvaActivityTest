@@ -1,0 +1,68 @@
+{% extends "payments/base.html" %}
+{% block title %}Silva Care Wide – Activities{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">All Sites</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Silva Care Wide</li>
+      </ol>
+    </nav>
+
+    <h1 class="mb-2">Silva Care Wide</h1>
+    <p class="text-muted mb-1">Activities available to everyone, regardless of which site they attend.</p>
+    <p class="text-muted small mb-4">A payment receipt will be sent after a successful payment.</p>
+
+    <div class="row g-4">
+      {% for activity in activities %}
+        <div class="col-md-6">
+          <div class="card card-activity shadow-sm border-0 h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title fw-bold">{{ activity.name }}</h5>
+              {% if activity.description %}
+                <p class="card-text text-muted small flex-grow-1">{{ activity.description|truncatewords:25 }}</p>
+              {% endif %}
+
+              {% if activity.is_payment_closed %}
+                <p class="small text-danger fw-semibold mb-1">
+                  Payments closed{{ activity.payment_closes_at|date:" j M" }}
+                </p>
+              {% elif activity.has_capacity and activity.spaces_remaining <= 5 and activity.spaces_remaining > 0 %}
+                <p class="small text-warning fw-semibold mb-1">
+                  Only {{ activity.spaces_remaining }} space{{ activity.spaces_remaining|pluralize:"s" }} left!
+                </p>
+              {% endif %}
+
+              <p class="display-6 text-sc-teal fw-bold mb-2">&pound;{{ activity.price_pounds|floatformat:2 }}</p>
+              <p class="text-muted small mb-3">
+                <strong>Date:</strong> {{ activity.start_date|date:"l d M Y" }}
+              </p>
+
+              {% if activity.is_payment_closed %}
+                <button class="btn btn-secondary w-100" disabled>Payments Closed</button>
+              {% elif activity.has_capacity and activity.is_full %}
+                <button class="btn btn-secondary w-100" disabled>Fully Booked</button>
+              {% else %}
+                <a href="{% url 'activity_pay' activity.id %}" class="btn btn-sc-primary w-100 mt-auto">
+                  Pay Now
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="alert alert-sc-info text-center">
+            No Silva Care Wide activities are currently available. Please check back later.
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <p class="text-center text-muted small mt-4">
+      Having problems? Ask a member of staff at your site for help.
+    </p>
+  </div>
+</div>
+{% endblock %}

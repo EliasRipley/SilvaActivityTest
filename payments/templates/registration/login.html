@@ -1,0 +1,40 @@
+{% extends "payments/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Staff Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-4">
+    <h1 class="mb-2 text-center">Staff Login</h1>
+    <p class="text-center text-muted mb-4">
+      Sign in to manage activities or view payments.
+    </p>
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Incorrect username or password.</strong><br>
+        <span class="small">Please check your details and try again.</span>
+      </div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-grid gap-2 mt-3">
+            <button type="submit" class="btn btn-sc-primary btn-lg">Sign In</button>
+          </div>
+          <p class="text-center mt-3 mb-0">
+            <a href="{% url 'password_reset' %}" class="small">Forgot your password?</a>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <p class="text-center text-muted small mt-4">
+      Site seniors &mdash; you should have received an invite link to create your account.
+      If you do not have one, ask the head office team.
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "payments/base.html" %}
+{% block title %}All Payments{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="mb-0">All Payments</h1>
+  <div class="dropdown">
+    <button class="btn btn-sc-primary dropdown-toggle" data-bs-toggle="dropdown">
+      Download CSV
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}">All payments</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><h6 class="dropdown-header">By month</h6></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=01">January {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=02">February {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=03">March {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=04">April {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=05">May {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=06">June {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=07">July {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=08">August {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=09">September {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=10">October {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=11">November {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=12">December {{ current_year }}</a></li>
+    </ul>
+  </div>
+</div>
+<p class="text-muted mb-4">Every payment made across all sites.</p>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label class="small text-muted">From:</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from|default:'' }}">
+      </div>
+      <div class="col-auto">
+        <label class="small text-muted">To:</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to|default:'' }}">
+      </div>
+      <div class="col-auto">
+        <label class="small text-muted">Site:</label>
+        <select name="site" class="form-select form-select-sm">
+          <option value="">All sites</option>
+          {% for site in sites %}
+            <option value="{{ site.id }}" {% if request.GET.site == site.id|stringformat:'i' %}selected{% endif %}>{{ site.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <label class="small text-muted">Status:</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All statuses</option>
+          <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+          <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+          <option value="refunded" {% if request.GET.status == 'refunded' %}selected{% endif %}>Refunded</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sc-primary btn-sm">Filter</button>
+        <a href="{% url 'headoffice_payments' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-stack-xs">
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>Service User</th>
+            <th>Activity</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td data-label="Site">{{ p.activity.display_site_name }}</td>
+            <td data-label="Service User">{{ p.normalized_name }}</td>
+            <td data-label="Activity">{{ p.activity.name }}</td>
+            <td data-label="Amount">&pound;{{ p.amount_pounds|floatformat:2 }}</td>
+            <td data-label="Status">
+              {% if p.status == "paid" %}
+                <span class="badge bg-success">Paid</span>
+              {% elif p.status == "pending" %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% elif p.status == "failed" %}
+                <span class="badge bg-danger">Failed</span>
+              {% elif p.status == "refunded" %}
+                <span class="badge bg-secondary">Refunded</span>
+              {% endif %}
+              {% if p.is_test %} <span class="badge bg-warning text-dark">TEST</span>{% endif %}
+            </td>
+            <td data-label="Date" class="small text-muted">{{ p.paid_at|date:"d M Y"|default:p.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">No payments found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

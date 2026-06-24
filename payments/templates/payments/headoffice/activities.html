@@ -1,0 +1,81 @@
+{% extends "payments/base.html" %}
+{% block title %}All Activities{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="mb-0">All Activities</h1>
+  <a href="{% url 'headoffice_activity_create' %}" class="btn btn-sc-primary">+ New Activity</a>
+</div>
+<p class="text-muted mb-4">Every activity across all sites. Create and manage activities here.</p>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-stack-xs">
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Date</th>
+            <th>Spaces</th>
+            <th>Payments Close</th>
+            <th>Status</th>
+            <th>Payments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for activity in activities %}
+            <tr>
+              <td data-label="Site">
+                {% if activity.is_company_wide %}
+                  <span class="badge bg-sc-teal">{{ company_wide_name }}</span>
+                {% else %}
+                  {{ activity.site.name }}
+                {% endif %}
+              </td>
+              <td class="fw-semibold" data-label="Name">{{ activity.name }}</td>
+              <td data-label="Price">&pound;{{ activity.price_pounds|floatformat:2 }}</td>
+              <td data-label="Date">{{ activity.start_date|date:"d M Y" }}</td>
+              <td data-label="Spaces">
+                {% if activity.has_capacity %}
+                  {{ activity.spaces_remaining }} / {{ activity.max_spaces }}
+                {% else %}
+                  <span class="text-muted">Unlimited</span>
+                {% endif %}
+              </td>
+              <td data-label="Payments Close">
+                {% if activity.payment_closes_at %}
+                  {{ activity.payment_closes_at|date:"d M Y" }}
+                  {% if activity.is_payment_closed %}
+                    <span class="badge bg-danger">Closed</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-muted">&mdash;</span>
+                {% endif %}
+              </td>
+              <td data-label="Status">
+                {% if activity.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td data-label="Payments">{{ activity.payments.count }}</td>
+              <td>
+                <a href="{% url 'headoffice_activity_edit' activity.id %}" class="btn btn-sm btn-outline-sc-primary">Edit</a>
+                <a href="{% url 'headoffice_activity_delete' activity.id %}" class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Are you sure? This cannot be undone.')">Delete</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center text-muted py-4">No activities yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

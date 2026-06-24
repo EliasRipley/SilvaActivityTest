@@ -1,0 +1,46 @@
+{% extends "payments/base.html" %}
+{% block title %}Add Site Senior{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'headoffice_seniors' %}">Site Seniors</a></li>
+    <li class="breadcrumb-item active">Add Senior</li>
+  </ol>
+</nav>
+
+<h1 class="mb-4">Add Site Senior</h1>
+
+<form method="post" class="card border-0 shadow-sm">
+  {% csrf_token %}
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="first_name" class="form-label">First name</label>
+      <input type="text" name="first_name" id="first_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="last_name" class="form-label">Last name</label>
+      <input type="text" name="last_name" id="last_name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Email (used as login)</label>
+      <input type="email" name="email" id="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" name="password" id="password" class="form-control" required>
+      <div class="form-text">Choose something they can remember. Tell them their email and password.</div>
+    </div>
+    <div class="mb-3">
+      <label for="site_id" class="form-label">Site</label>
+      <select name="site_id" id="site_id" class="form-select" required>
+        <option value="">Select a site...</option>
+        {% for site in sites %}
+          <option value="{{ site.id }}">{{ site.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-sc-primary">Create Account</button>
+    <a href="{% url 'headoffice_seniors' %}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

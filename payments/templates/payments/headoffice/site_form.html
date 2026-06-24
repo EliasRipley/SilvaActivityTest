@@ -1,0 +1,36 @@
+{% extends "payments/base.html" %}
+{% block title %}{% if site %}Edit Site{% else %}New Site{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <h1 class="mb-2">{% if site %}Edit Site{% else %}Add a New Site{% endif %}</h1>
+    <p class="text-muted mb-4">
+      {% if site %}Update the details for {{ site.name }}.{% else %}Create a new care site in the system.{% endif %}
+    </p>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Site name</label>
+            <input type="text" name="name" class="form-control form-control-lg"
+                   placeholder="e.g. Maple Lodge" value="{{ site.name|default:'' }}" required>
+            <div class="form-text">The name of the care site as parents/carers will see it.</div>
+          </div>
+          {% if site %}
+            <div class="mb-3 form-check">
+              <input type="checkbox" name="is_active" class="form-check-input" id="activeCheck" {% if site.is_active %}checked{% endif %}>
+              <label class="form-check-label" for="activeCheck">Site is active (visible to public)</label>
+            </div>
+          {% endif %}
+          <button type="submit" class="btn btn-sc-primary">
+            {% if site %}Save Changes{% else %}Create Site{% endif %}
+          </button>
+          <a href="{% url 'headoffice_sites' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

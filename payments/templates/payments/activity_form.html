@@ -1,0 +1,59 @@
+{% extends "payments/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  {% if activity %}Edit {{ activity.name }}{% else %}New Activity{% endif %}
+  &ndash; {{ site.name }}
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'site_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'site_manage_activities' %}">Activities</a></li>
+        <li class="breadcrumb-item active">{% if activity %}Edit{% else %}New Activity{% endif %}</li>
+      </ol>
+    </nav>
+
+    <h1 class="mb-1">
+      {% if activity %}Edit Activity{% else %}Create a New Activity{% endif %}
+    </h1>
+    <p class="text-muted mb-4">
+      {% if activity %}
+        Update the details for <strong>{{ activity.name }}</strong>. Changes will be visible to parents/carers immediately.
+      {% else %}
+        Set up a new activity that parents/carers can pay for. Fill in the details below.
+      {% endif %}
+    </p>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          {% if activity and activity.payments.exists %}
+            <div class="alert alert-warning small mt-3">
+              <strong>Note:</strong> This activity already has payments. Changing the price will not affect existing payments.
+            </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-sc-primary">
+              {% if activity %}Save Changes{% else %}Create Activity{% endif %}
+            </button>
+            <a href="{% url 'site_manage_activities' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="mt-4 p-3 bg-light rounded small text-muted">
+      <strong>What happens next?</strong><br>
+      Once saved, the activity will appear on the public payment page (if set to active).
+      Parents and carers can pick it, enter a name, and pay by card.
+      You will be able to see who has paid on your dashboard.
+    </div>
+  </div>
+</div>
+{% endblock %}
