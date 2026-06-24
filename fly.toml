@@ -1,0 +1,33 @@
+app = "silva-activity-portal"
+
+[build]
+
+[env]
+  PORT = "8080"
+  DATABASE_PATH = "/data/db.sqlite3"
+  DJANGO_DEBUG = "False"
+
+[[mounts]]
+  source = "data"
+  destination = "/data"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "3s"
+    grace_period = "30s"
+    method = "get"
+    path = "/"
+    protocol = "http"

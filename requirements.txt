@@ -3,3 +3,5 @@ stripe
 python-dotenv
 django-crispy-forms
 crispy-bootstrap5
+gunicorn
+whitenoise
