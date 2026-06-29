@@ -1,6 +1,8 @@
 {% extends "payments/base.html" %}
 {% block title %}Headoffice Dashboard{% endblock %}
 {% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="dashboard" %}
+
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h1 class="mb-0">Headoffice Dashboard</h1>
   <span class="text-muted small">{{ user.first_name|default:user.username }}</span>
@@ -40,13 +42,21 @@
       </div>
     </div>
   </div>
+  <div class="col-md-3">
+    <div class="card stat-card text-white shadow-sm" style="background-color:#8e44ad;">
+      <div class="card-body text-center py-3">
+        <div class="fs-3 fw-bold">{{ total_account_holders }}</div>
+        <div class="small text-white-50">SU / Parent Accounts</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="row g-4">
   <div class="col-md-8">
     <div class="card border-0 shadow-sm">
       <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-        Recent Payments
+        Recent Activity Payments
         <a href="{% url 'headoffice_payments' %}" class="small">View all</a>
       </div>
       <div class="card-body p-0">
@@ -82,6 +92,36 @@
         {% endif %}
       </div>
     </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+      <div class="card-header bg-white fw-semibold">Recent Top-Ups</div>
+      <div class="card-body p-0">
+        {% if recent_topups %}
+          <div class="table-responsive">
+            <table class="table mb-0 small">
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in recent_topups %}
+                  <tr>
+                    <td>{{ t.wallet.user.get_full_name|default:t.wallet.user.username }}</td>
+                    <td class="text-success fw-semibold">+£{{ t.amount_pounds|floatformat:2 }}</td>
+                    <td class="text-muted">{{ t.created_at|date:"d M" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted text-center py-3 mb-0 small">No top-ups yet.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
   <div class="col-md-4">
@@ -103,6 +143,14 @@
         <a href="{% url 'headoffice_payments' %}" class="list-group-item list-group-item-action d-flex align-items-center gap-2">
           <span style="width:8px;height:8px;border-radius:50%;background:var(--sc-teal);display:inline-block;"></span>
           All Payments &amp; CSV Export
+        </a>
+        <a href="{% url 'headoffice_account_holders' %}" class="list-group-item list-group-item-action d-flex align-items-center gap-2">
+          <span style="width:8px;height:8px;border-radius:50%;background:#8e44ad;display:inline-block;"></span>
+          SU / Parent / Carer Accounts
+        </a>
+        <a href="{% url 'headoffice_settings' %}" class="list-group-item list-group-item-action d-flex align-items-center gap-2">
+          <span style="width:8px;height:8px;border-radius:50%;background:#f39c12;display:inline-block;"></span>
+          Settings (Balance Toggle)
         </a>
       </div>
     </div>

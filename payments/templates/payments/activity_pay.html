@@ -26,6 +26,19 @@
         <hr>
         <p class="display-6 text-sc-teal fw-bold mb-4">&pound;{{ activity.price_pounds|floatformat:2 }}</p>
 
+        {% if is_account_holder and su_enabled and wallet_enabled %}
+          <div class="alert alert-sc-info small py-2 mb-3">
+            <strong>Your balance:</strong> &pound;{{ user.wallet.balance_pounds|floatformat:2 }}
+            &middot;
+            <strong>Price:</strong> &pound;{{ activity.price_pounds|floatformat:2 }}
+            {% if user.wallet.balance_pennies >= activity.price_pennies %}
+              <br><span class="text-success fw-semibold">You have enough balance to pay for this activity.</span>
+            {% else %}
+              <br><span class="text-warning fw-semibold">Insufficient balance. You will be asked to pay by card.</span>
+            {% endif %}
+          </div>
+        {% endif %}
+
         <div class="alert alert-sc-info small py-2 mb-3">
           <strong>You are about to pay</strong> &pound;{{ activity.price_pounds|floatformat:2 }} for
           <strong>{{ activity.name }}</strong> at <strong>{{ activity.display_site_name }}</strong>.
@@ -36,13 +49,23 @@
           {% csrf_token %}
           {{ form|crispy }}
           <div class="d-grid gap-2 mt-4">
-            <button type="submit" class="btn btn-sc-primary btn-lg">Continue to Payment</button>
+            <button type="submit" class="btn btn-sc-primary btn-lg">
+              {% if is_account_holder and su_enabled and wallet_enabled and user.wallet.balance_pennies >= activity.price_pennies %}
+                Pay from Balance
+              {% else %}
+                Continue to Payment
+              {% endif %}
+            </button>
           </div>
         </form>
 
         <p class="text-center text-muted small mt-3">
-          You will be asked to enter your card details on the next page.
-          Payments are processed securely by <strong>Stripe</strong>.
+          {% if is_account_holder and su_enabled and wallet_enabled and user.wallet.balance_pennies >= activity.price_pennies %}
+            The amount will be deducted from your account balance.
+          {% else %}
+            You will be asked to enter your card details on the next page.
+            Payments are processed securely by <strong>Stripe</strong>.
+          {% endif %}
         </p>
       </div>
     </div>

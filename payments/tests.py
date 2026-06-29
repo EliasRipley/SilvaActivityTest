@@ -322,8 +322,8 @@ class FinanceFlowTests(TestCase):
         self.client.login(username="admin@test.com", password="password123")
         resp = self.client.get(reverse("headoffice_csv_export"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp["Content-Type"], "text/csv"
+        self.assertTrue(
+            resp["Content-Type"].startswith("text/csv")
         )
 
 

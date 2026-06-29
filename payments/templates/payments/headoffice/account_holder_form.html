@@ -1,0 +1,76 @@
+{% extends "payments/base.html" %}
+{% block title %}{% if editing %}Edit Account{% else %}Add Account{% endif %}{% endblock %}
+{% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="accounts" %}
+
+<h1 class="mb-4">{% if editing %}Edit Account{% else %}Add New Account{% endif %}</h1>
+<p class="text-muted mb-4">
+  {% if editing %}
+    Update details for <strong>{{ holder_user.get_full_name }}</strong>.
+  {% else %}
+    Create a new account for a parent, carer, or service user. They will receive login credentials.
+  {% endif %}
+</p>
+
+<form method="post" class="card border-0 shadow-sm">
+  {% csrf_token %}
+  <div class="card-body">
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="mb-3">
+      <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+      {{ form.email }}
+      {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    {% if not editing %}
+    <div class="mb-3">
+      <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+      {{ form.password }}
+      <div class="form-text">{{ form.password.help_text }}</div>
+      {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors }}</div>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if editing %}
+    <div class="mb-3 form-check">
+      {{ form.is_active }}
+      <label for="{{ form.is_active.id_for_label }}" class="form-check-label">{{ form.is_active.label }}</label>
+    </div>
+    {% endif %}
+
+    <div class="mb-3">
+      <label for="{{ form.site.id_for_label }}" class="form-label">{{ form.site.label }}</label>
+      {{ form.site }}
+      {% if form.site.errors %}<div class="text-danger small mt-1">{{ form.site.errors }}</div>{% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.service_user_names.id_for_label }}" class="form-label">{{ form.service_user_names.label }}</label>
+      {{ form.service_user_names }}
+      <div class="form-text">{{ form.service_user_names.help_text }}</div>
+      {% if form.service_user_names.errors %}<div class="text-danger small mt-1">{{ form.service_user_names.errors }}</div>{% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-sc-primary">
+      {% if editing %}Save Changes{% else %}Create Account{% endif %}
+    </button>
+    <a href="{% url 'headoffice_account_holders' %}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

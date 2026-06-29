@@ -1,11 +1,7 @@
 {% extends "payments/base.html" %}
 {% block title %}Add Site Senior{% endblock %}
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'headoffice_seniors' %}">Site Seniors</a></li>
-    <li class="breadcrumb-item active">Add Senior</li>
-  </ol>
+{% include "payments/_tabs_headoffice.html" with active_tab="seniors" %}
 </nav>
 
 <h1 class="mb-4">Add Site Senior</h1>

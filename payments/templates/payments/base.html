@@ -35,23 +35,16 @@
               <li class="nav-item">
                 <a class="nav-link fw-semibold{% if 'site' in request.path %} active{% endif %}" href="{% url 'site_dashboard' %}">My Site</a>
               </li>
+            {% elif user.wallet %}
+              <li class="nav-item">
+                <a class="nav-link fw-semibold{% if 'account' in request.path %} active{% endif %}" href="{% url 'account_dashboard' %}">My Account</a>
+              </li>
             {% endif %}
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ user.first_name|default:user.username }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                {% if user.is_staff %}
-                  <li><a class="dropdown-item" href="{% url 'headoffice_sites' %}">Sites</a></li>
-                  <li><a class="dropdown-item" href="{% url 'headoffice_activities' %}">Activities</a></li>
-                  <li><a class="dropdown-item" href="{% url 'headoffice_seniors' %}">Seniors</a></li>
-                  <li><a class="dropdown-item" href="{% url 'headoffice_payments' %}">Payments</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                {% elif user.site_senior %}
-                  <li><a class="dropdown-item" href="{% url 'site_manage_activities' %}">Activities</a></li>
-                  <li><a class="dropdown-item" href="{% url 'site_payments' %}">Payments</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                {% endif %}
                 <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
@@ -64,7 +57,7 @@
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Staff Login</a>
+              <a class="nav-link" href="{% url 'login' %}">Sign In</a>
             </li>
           {% endif %}
         </ul>

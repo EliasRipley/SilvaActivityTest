@@ -10,8 +10,8 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.db.models import Q, Sum
 from django.views.decorators.csrf import csrf_exempt
-from .models import Site, Activity, Payment, SiteSenior, BookingHold
-from .forms import ServiceUserForm, ActivityForm
+from .models import Site, Activity, Payment, SiteSenior, BookingHold, Wallet, WalletTransaction, AppSetting, ServiceUser
+from .forms import ServiceUserForm, ActivityForm, ServiceUserFormForAccount
 from .utils import normalize_name
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -44,6 +44,8 @@ def redirect_after_login(request):
         return redirect("headoffice_dashboard")
     if hasattr(request.user, "site_senior"):
         return redirect("site_dashboard")
+    if hasattr(request.user, "wallet") and _su_accounts_enabled():
+        return redirect("account_dashboard")
     return redirect("home")
 
 
@@ -98,6 +100,65 @@ def site_activities(request, site_slug):
     )
 
 
+def _su_accounts_enabled():
+    try:
+        return AppSetting.objects.get(key="su_accounts_enabled").bool_value
+    except AppSetting.DoesNotExist:
+        return True
+
+
+def _wallet_system_enabled():
+    try:
+        return AppSetting.objects.get(key="wallet_system_enabled").bool_value
+    except AppSetting.DoesNotExist:
+        return False
+
+
+def _get_max_deposit():
+    try:
+        val = AppSetting.objects.get(key="max_deposit_amount").int_value
+        return val if val > 0 else 100
+    except AppSetting.DoesNotExist:
+        return 100
+
+
+def _process_wallet_payment(request, activity, service_user_name, normalized_name):
+    """Process payment from wallet balance. Returns True if successful."""
+    wallet = request.user.wallet
+    if wallet.balance_pennies >= activity.price_pennies:
+        wallet.balance_pennies -= activity.price_pennies
+        wallet.save()
+
+        payment = Payment.objects.create(
+            activity=activity,
+            service_user_name=service_user_name,
+            normalized_name=normalized_name,
+            amount_pennies=activity.price_pennies,
+            status="paid",
+            paid_at=timezone.now(),
+            payment_method="wallet",
+            paid_by=request.user,
+            is_test=_is_stripe_test_mode(),
+        )
+
+        WalletTransaction.objects.create(
+            wallet=wallet,
+            amount_pennies=-activity.price_pennies,
+            transaction_type="payment",
+            description=f"Payment for {activity.name} – {service_user_name}",
+            payment=payment,
+        )
+
+        session_key = request.session.session_key
+        if session_key:
+            BookingHold.objects.filter(
+                activity=activity, session_key=session_key
+            ).delete()
+
+        return True
+    return False
+
+
 def activity_pay(request, activity_id):
     _release_expired_holds()
     activity = get_object_or_404(
@@ -105,6 +166,15 @@ def activity_pay(request, activity_id):
     )
     if activity.site and not activity.site.is_active:
         return redirect("home")
+
+    is_account_holder = (
+        request.user.is_authenticated
+        and hasattr(request.user, "wallet")
+        and not request.user.is_staff
+        and not hasattr(request.user, "site_senior")
+    )
+    su_enabled = _su_accounts_enabled()
+    wallet_enabled = _wallet_system_enabled()
 
     # Check capacity and payment closure upfront
     if not activity.can_book():
@@ -115,10 +185,20 @@ def activity_pay(request, activity_id):
         )
 
     if request.method == "POST":
-        form = ServiceUserForm(request.POST)
+        if is_account_holder and su_enabled:
+            form = ServiceUserFormForAccount(request.POST, account=request.user)
+        else:
+            form = ServiceUserForm(request.POST)
+
         if form.is_valid():
-            raw_name = form.cleaned_data["service_user_name"]
-            normalized = normalize_name(raw_name)
+            if is_account_holder and su_enabled:
+                su_id = form.cleaned_data["service_user"]
+                service_user = ServiceUser.objects.get(id=su_id)
+                raw_name = service_user.name
+                normalized = normalize_name(raw_name)
+            else:
+                raw_name = form.cleaned_data["service_user_name"]
+                normalized = normalize_name(raw_name)
 
             # Double-check capacity before creating hold
             if not activity.can_book():
@@ -131,11 +211,22 @@ def activity_pay(request, activity_id):
                     return redirect("site_activities", site_slug=activity.site.slug)
                 return redirect("company_wide_activities")
 
-            # Create a booking hold (10 min expiry)
+            # Try wallet payment if applicable
+            if is_account_holder and su_enabled and wallet_enabled:
+                if _process_wallet_payment(request, activity, raw_name, normalized):
+                    return render(
+                        request,
+                        "payments/payment_success.html",
+                        {"name": normalized},
+                    )
+
+            # Ensure the session exists in the DB before using its key
+            if not request.session.session_key:
+                request.session.save()
             try:
                 hold = BookingHold.create_hold(
                     activity,
-                    request.session.session_key or request.session._get_or_create_session_key(),
+                    request.session.session_key,
                     hold_minutes=settings.BOOKING_HOLD_MINUTES,
                 )
             except Exception:
@@ -174,12 +265,21 @@ def activity_pay(request, activity_id):
                 )
                 return redirect("activity_pay", activity_id=activity.id)
     else:
-        form = ServiceUserForm()
+        if is_account_holder and su_enabled:
+            form = ServiceUserFormForAccount(account=request.user)
+        else:
+            form = ServiceUserForm()
 
     return render(
         request,
         "payments/activity_pay.html",
-        {"activity": activity, "form": form},
+        {
+            "activity": activity,
+            "form": form,
+            "is_account_holder": is_account_holder,
+            "su_enabled": su_enabled,
+            "wallet_enabled": wallet_enabled,
+        },
     )
 
 
@@ -215,12 +315,16 @@ def payment_success(request):
     if pending:
         # Normal flow — session data intact
         activity = Activity.objects.get(id=pending["activity_id"])
-        _record_payment(
+        payment = _record_payment(
             activity_id=pending["activity_id"],
             service_user_name=pending["service_user_name"],
             stripe_payment_intent_id=intent_id,
             amount_pennies=pending["amount_pennies"],
         )
+        # If user is logged in and has wallet, link the payment
+        if payment and request.user.is_authenticated and hasattr(request.user, "wallet"):
+            payment.paid_by = request.user
+            payment.save()
         name = pending["normalized_name"]
         session_key = request.session.session_key
         if session_key:

@@ -172,6 +172,11 @@ class Payment(models.Model):
         ("refunded", "Refunded"),
     ]
 
+    PAYMENT_METHOD_CHOICES = [
+        ("card", "Card"),
+        ("wallet", "Wallet"),
+    ]
+
     activity = models.ForeignKey(
         Activity, on_delete=models.CASCADE, related_name="payments"
     )
@@ -187,6 +192,13 @@ class Payment(models.Model):
     )
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="pending"
+    )
+    payment_method = models.CharField(
+        max_length=10, choices=PAYMENT_METHOD_CHOICES, default="card"
+    )
+    paid_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="payments_made"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
@@ -212,3 +224,104 @@ class SiteSenior(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name()} @ {self.site.name}"
+
+
+class ServiceUser(models.Model):
+    """A person attending activities - managed by an account holder."""
+    account = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="service_users",
+        null=True, blank=True,
+        help_text="The parent/carer/service user account that manages this person.",
+    )
+    name = models.CharField(max_length=300)
+    site = models.ForeignKey(
+        Site, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="service_users",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Wallet(models.Model):
+    """Pre-paid balance for a parent/carer/service user account."""
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="wallet"
+    )
+    balance_pennies = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username} \u2013 \u00a3{self.balance_pounds:.2f}"
+
+    @property
+    def balance_pounds(self):
+        return self.balance_pennies / 100
+
+
+class WalletTransaction(models.Model):
+    TRANSACTION_TYPES = [
+        ("topup", "Top Up"),
+        ("payment", "Payment for Activity"),
+        ("refund", "Refund"),
+        ("adjustment", "Manual Adjustment"),
+    ]
+
+    wallet = models.ForeignKey(
+        Wallet, on_delete=models.CASCADE, related_name="transactions"
+    )
+    amount_pennies = models.IntegerField(
+        help_text="Positive for credits (top-ups), negative for debits (payments)"
+    )
+    transaction_type = models.CharField(
+        max_length=20, choices=TRANSACTION_TYPES
+    )
+    description = models.CharField(max_length=500, blank=True)
+    payment = models.ForeignKey(
+        Payment, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="wallet_transactions",
+    )
+    stripe_payment_intent_id = models.CharField(
+        max_length=300, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} \u2013 {self.amount_pennies}p"
+
+    @property
+    def amount_pounds(self):
+        return abs(self.amount_pennies) / 100
+
+
+class AppSetting(models.Model):
+    """Key-value store for application settings."""
+    key = models.CharField(max_length=100, unique=True)
+    value = models.CharField(max_length=500, default="False")
+
+    class Meta:
+        verbose_name = "App Setting"
+        verbose_name_plural = "App Settings"
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
+    @property
+    def bool_value(self):
+        return self.value.lower() == "true"
+
+    @property
+    def int_value(self):
+        try:
+            return int(self.value)
+        except (ValueError, TypeError):
+            return 0

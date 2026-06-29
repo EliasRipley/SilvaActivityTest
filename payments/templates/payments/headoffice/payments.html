@@ -1,32 +1,64 @@
 {% extends "payments/base.html" %}
-{% block title %}All Payments{% endblock %}
+{% block title %}Payments &amp; Top-Ups{% endblock %}
 {% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="payments" %}
+
 <div class="d-flex justify-content-between align-items-center mb-2">
-  <h1 class="mb-0">All Payments</h1>
+  <h1 class="mb-0">Payments &amp; Top-Ups</h1>
   <div class="dropdown">
     <button class="btn btn-sc-primary dropdown-toggle" data-bs-toggle="dropdown">
       Download CSV
     </button>
     <ul class="dropdown-menu dropdown-menu-end">
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}">All payments</a></li>
-      <li><hr class="dropdown-divider"></li>
-      <li><h6 class="dropdown-header">By month</h6></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=01">January {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=02">February {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=03">March {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=04">April {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=05">May {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=06">June {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=07">July {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=08">August {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=09">September {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=10">October {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=11">November {{ current_year }}</a></li>
-      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ current_year }}&month=12">December {{ current_year }}</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?{{ request.GET.urlencode }}">All activity payments</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?{{ request.GET.urlencode }}">All top-ups</a></li>
+      <li><a class="dropdown-item" href="{% url 'headoffice_csv_combined_export' %}?{{ request.GET.urlencode }}">All activity payments &amp; top-ups</a></li>
+      {% if request.GET.date_from or request.GET.date_to %}
+        <li><hr class="dropdown-divider"></li>
+        <li><h6 class="dropdown-header">
+          Active filter{% if request.GET.date_from %} from {{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %} to {{ request.GET.date_to }}{% endif %}
+        </h6></li>
+        {% if request.GET.site or request.GET.status %}
+          <li class="dropdown-item-text small text-muted">
+            {% if request.GET.site %}Site: {{ request.GET.site }}{% endif %}
+            {% if request.GET.status %}{% if request.GET.site %} &middot; {% endif %}Status: {{ request.GET.status }}{% endif %}
+          </li>
+        {% endif %}
+        <li><span class="dropdown-item-text small text-muted"><em>Month links hidden — date filter active</em></span></li>
+      {% else %}
+        <li><hr class="dropdown-divider"></li>
+        <li><h6 class="dropdown-header">Activity payments by month</h6></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=01{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">January {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=02{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">February {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=03{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">March {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=04{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">April {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=05{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">May {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=06{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">June {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=07{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">July {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=08{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">August {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=09{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">September {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=10{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">October {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=11{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">November {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_export' %}?year={{ csv_year }}&month=12{% if request.GET.site %}&site={{ request.GET.site }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">December {{ csv_year }}</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><h6 class="dropdown-header">Top-ups by month</h6></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=01">January {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=02">February {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=03">March {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=04">April {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=05">May {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=06">June {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=07">July {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=08">August {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=09">September {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=10">October {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=11">November {{ csv_year }}</a></li>
+        <li><a class="dropdown-item" href="{% url 'headoffice_csv_topups_export' %}?year={{ csv_year }}&month=12">December {{ csv_year }}</a></li>
+      {% endif %}
     </ul>
   </div>
 </div>
-<p class="text-muted mb-4">Every payment made across all sites.</p>
+<p class="text-muted mb-4">Activity payments and wallet top-ups across all sites.</p>
 
 <div class="card border-0 shadow-sm mb-3">
   <div class="card-body py-2">
@@ -60,13 +92,15 @@
       </div>
       <div class="col-auto">
         <button type="submit" class="btn btn-sc-primary btn-sm">Filter</button>
+        <button type="submit" formaction="{% url 'headoffice_csv_combined_export' %}" class="btn btn-outline-primary btn-sm">Export Filtered CSV</button>
         <a href="{% url 'headoffice_payments' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
       </div>
     </form>
   </div>
 </div>
 
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white fw-semibold">Activity Payments</div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover mb-0 table-stack-xs">
@@ -99,11 +133,41 @@
               {% endif %}
               {% if p.is_test %} <span class="badge bg-warning text-dark">TEST</span>{% endif %}
             </td>
-            <td data-label="Date" class="small text-muted">{{ p.paid_at|date:"d M Y"|default:p.created_at|date:"d M Y" }}</td>
+            <td data-label="Date" class="small text-muted">{% firstof p.paid_at|date:"d M Y" p.created_at|date:"d M Y" %}</td>
           </tr>
           {% empty %}
             <tr>
               <td colspan="6" class="text-center text-muted py-4">No payments found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">Top-Ups</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-stack-xs">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Amount</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in topups %}
+          <tr>
+            <td data-label="Account">{{ t.wallet.user.get_full_name|default:t.wallet.user.username }}</td>
+            <td data-label="Amount" class="text-success fw-semibold">+&pound;{{ t.amount_pounds|floatformat:2 }}</td>
+            <td data-label="Date" class="small text-muted">{{ t.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-4">No top-ups yet.</td>
             </tr>
           {% endfor %}
         </tbody>

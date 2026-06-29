@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth.models import User
+from .models import Site, ServiceUser
 
 
 class ServiceUserForm(forms.Form):
@@ -28,7 +30,7 @@ class ActivityForm(forms.ModelForm):
         decimal_places=2,
         widget=forms.NumberInput(
             attrs={
-                "step": "0.50",
+                "step": "0.01",
                 "class": "form-control",
                 "placeholder": "e.g. 12.50",
             }
@@ -143,3 +145,141 @@ class HeadofficeActivityForm(ActivityForm):
         site_field.required = False
         site_field.empty_label = "Silva Care Wide"
         site_field.queryset = Site.objects.all()
+
+
+class AccountHolderUserForm(forms.Form):
+    """Form for creating a parent/carer/service user account."""
+    email = forms.EmailField(
+        label="Email (used as login)",
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    )
+    first_name = forms.CharField(
+        label="First name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    last_name = forms.CharField(
+        label="Last name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+        help_text="The user can change this after first login.",
+    )
+    site = forms.ModelChoiceField(
+        label="Site",
+        queryset=Site.objects.filter(is_active=True),
+        required=False,
+        empty_label="No site (general account)",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    service_user_names = forms.CharField(
+        label="Service users (optional)",
+        required=False,
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "rows": 2,
+            "placeholder": "e.g. John Smith, Jane Doe (one per line)",
+        }),
+        help_text="Enter names of service users this account manages, one per line.",
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        if User.objects.filter(username__iexact=email).exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
+
+
+class AccountHolderEditForm(forms.Form):
+    """Form for editing an existing account holder."""
+    email = forms.EmailField(
+        label="Email (used as login)",
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    )
+    first_name = forms.CharField(
+        label="First name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    last_name = forms.CharField(
+        label="Last name",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    is_active = forms.BooleanField(
+        label="Account is active",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
+    site = forms.ModelChoiceField(
+        label="Site",
+        queryset=Site.objects.filter(is_active=True),
+        required=False,
+        empty_label="No site (general account)",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    service_user_names = forms.CharField(
+        label="Service users (one per line)",
+        required=False,
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "rows": 3,
+        }),
+        help_text="Edit the names of service users this account manages, one per line.",
+    )
+
+    def __init__(self, *args, instance=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._instance = instance
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        qs = User.objects.filter(username__iexact=email)
+        if self._instance:
+            qs = qs.exclude(pk=self._instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
+
+
+class ServiceUserFormForAccount(forms.Form):
+    """Form for account holders to select a service user when paying."""
+    service_user = forms.ChoiceField(
+        label="Who is attending?",
+        widget=forms.Select(attrs={"class": "form-control form-control-lg"}),
+        help_text="Select the person who will attend the activity.",
+    )
+
+    def __init__(self, *args, account=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if account:
+            users = account.service_users.filter(is_active=True)
+            self.fields["service_user"].choices = [
+                (u.id, u.name) for u in users
+            ]
+
+
+class TopUpForm(forms.Form):
+    """Form for adding funds to a wallet."""
+    amount_pounds = forms.DecimalField(
+        label="Amount to add",
+        max_digits=8,
+        decimal_places=2,
+        min_value=1.00,
+        widget=forms.NumberInput(attrs={
+            "step": "any",
+            "class": "form-control form-control-lg",
+            "placeholder": "e.g. 20.00",
+        }),
+        help_text="Enter the amount in pounds (minimum £1).",
+    )
+
+    def __init__(self, *args, max_deposit=100, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["amount_pounds"].max_value = max_deposit
+        self.fields["amount_pounds"].help_text = (
+            f"Enter the amount in pounds (minimum £1, maximum £{max_deposit})."
+        )

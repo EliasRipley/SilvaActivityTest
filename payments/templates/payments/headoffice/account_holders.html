@@ -1,0 +1,72 @@
+{% extends "payments/base.html" %}
+{% block title %}Service User / Parent Accounts{% endblock %}
+{% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="accounts" %}
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="mb-0">Service User / Parent / Carer Accounts</h1>
+  <a href="{% url 'headoffice_account_holder_create' %}" class="btn btn-sc-primary">Add Account</a>
+</div>
+<p class="text-muted mb-4">Manage parent, carer, and service user accounts. These users can log in and use the balance feature.</p>
+
+{% if holders %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-stack-xs">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Service Users</th>
+            <th>Balance</th>
+            <th>Bookings</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in holders %}
+            <tr>
+              <td data-label="Name">{{ h.user.get_full_name|default:h.user.username }}</td>
+              <td data-label="Email">{{ h.user.email }}</td>
+              <td data-label="Service Users">
+                {% if h.service_users %}
+                  {% for su in h.service_users %}
+                    <span class="badge bg-sc-teal me-1">{{ su.name }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted">&mdash;</span>
+                {% endif %}
+              </td>
+              <td data-label="Balance">&pound;{{ h.wallet.balance_pounds|floatformat:2 }}</td>
+              <td data-label="Bookings">{{ h.payment_count }}</td>
+              <td data-label="Active">{% if h.user.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+              <td>
+                <a href="{% url 'headoffice_account_holder_detail' h.user.id %}" class="btn btn-sm btn-outline-sc-primary">View</a>
+                <a href="{% url 'headoffice_account_holder_edit' h.user.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a href="{% url 'headoffice_account_holder_delete' h.user.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove account for {{ h.user.get_full_name }}? This will delete their login and all associated data.')">Remove</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-sc-info">
+    No parent/carer/service user accounts yet. <a href="{% url 'headoffice_account_holder_create' %}">Add one</a>.
+  </div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body">
+    <h6 class="card-title">About Account Types</h6>
+    <p class="card-text small text-muted mb-0">
+      <strong>Service User / Parent / Carer accounts</strong> allow families to log in, view their balance,
+      top up funds, and book activities. The balance feature can be toggled on or off in
+      <a href="{% url 'headoffice_settings' %}">Settings</a>.
+      These accounts can change their own passwords after logging in.
+    </p>
+  </div>
+</div>
+{% endblock %}

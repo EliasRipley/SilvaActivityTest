@@ -14,7 +14,11 @@ SECRET_KEY = os.getenv(
 
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = (
+    os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+    if os.getenv("DJANGO_ALLOWED_HOSTS")
+    else ["*"]
+)
 
 
 # Application definition
@@ -141,6 +145,9 @@ BOOKING_HOLD_MINUTES = int(os.getenv("BOOKING_HOLD_MINUTES", "10"))
 
 # Stripe webhook secret (optional — webhook works without it in dev)
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+# Balance feature — managed via headoffice settings UI
+BALANCE_FEATURE_ENABLED_DEFAULT = False
 
 # Fly.io / production settings
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else []

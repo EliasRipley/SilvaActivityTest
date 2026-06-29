@@ -1,0 +1,37 @@
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'dashboard' %}active{% endif %}"
+       {% if active_tab == 'dashboard' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_dashboard' %}">Dashboard</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'sites' %}active{% endif %}"
+       {% if active_tab == 'sites' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_sites' %}">Sites</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'activities' %}active{% endif %}"
+       {% if active_tab == 'activities' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_activities' %}">Activities</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'seniors' %}active{% endif %}"
+       {% if active_tab == 'seniors' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_seniors' %}">Seniors</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'accounts' %}active{% endif %}"
+       {% if active_tab == 'accounts' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_account_holders' %}">Account Holders</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'payments' %}active{% endif %}"
+       {% if active_tab == 'payments' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_payments' %}">Payments</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'settings' %}active{% endif %}"
+       {% if active_tab == 'settings' %}aria-current="page"{% endif %}
+       href="{% url 'headoffice_settings' %}">Settings</a>
+  </li>
+</ul>

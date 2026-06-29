@@ -1,0 +1,58 @@
+{% extends "payments/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="settings" %}
+
+<h1 class="mb-2">Settings</h1>
+<p class="text-muted mb-4">Manage application settings.</p>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-check form-switch mb-4">
+        <input class="form-check-input" type="checkbox" role="switch"
+               name="su_accounts_enabled" id="su_accounts_enabled"
+               {% if su_accounts_enabled %}checked{% endif %}>
+        <label class="form-check-label fw-semibold" for="su_accounts_enabled">
+          Service User Accounts Active
+        </label>
+        <div class="form-text">
+          When enabled, service users / parents / carers can log in, manage their
+          account, and book activities. When disabled, the site works purely as
+          an activity payment portal with no user accounts.
+        </div>
+      </div>
+
+      <div class="form-check form-switch mb-4">
+        <input class="form-check-input" type="checkbox" role="switch"
+               name="wallet_system_enabled" id="wallet_system_enabled"
+               {% if wallet_system_enabled %}checked{% endif %}
+               {% if not su_accounts_enabled %}disabled{% endif %}>
+        <label class="form-check-label fw-semibold" for="wallet_system_enabled">
+          Wallet System Active
+        </label>
+        <div class="form-text">
+          When enabled, logged-in users can top up their balance and pay for
+          activities from their wallet. When disabled, all payments go through
+          the card-only flow. Requires Service User Accounts to be active.
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="max_deposit_amount" class="form-label fw-semibold">Maximum Deposit Amount (&pound;)</label>
+        <input type="number" name="max_deposit_amount" id="max_deposit_amount"
+               class="form-control" style="max-width:200px;"
+               value="{{ max_deposit_amount }}" min="1" step="1">
+        <div class="form-text">
+          The maximum amount (in pounds) a user can top up in a single transaction.
+          Set this to control the deposit limit. Default is 100.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-sc-primary">Save Settings</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

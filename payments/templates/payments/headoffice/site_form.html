@@ -1,6 +1,8 @@
 {% extends "payments/base.html" %}
 {% block title %}{% if site %}Edit Site{% else %}New Site{% endif %}{% endblock %}
 {% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="sites" %}
+
 <div class="row justify-content-center">
   <div class="col-lg-5">
     <h1 class="mb-2">{% if site %}Edit Site{% else %}Add a New Site{% endif %}</h1>

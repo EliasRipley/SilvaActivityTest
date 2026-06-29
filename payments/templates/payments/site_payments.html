@@ -1,6 +1,8 @@
 {% extends "payments/base.html" %}
 {% block title %}Payments &ndash; {{ site.name }}{% endblock %}
 {% block content %}
+{% include "payments/_tabs_senior.html" with active_tab="payments" %}
+
 <h1 class="mb-2">Payment History</h1>
 <p class="text-muted mb-4">{{ site.name }} &ndash; All payments including all-sites activities.</p>
 
@@ -37,7 +39,7 @@
               {% endif %}
               {% if p.is_test %} <span class="badge bg-warning text-dark">TEST</span>{% endif %}
             </td>
-            <td data-label="Date">{{ p.paid_at|date:"d M Y H:i"|default:p.created_at|date:"d M Y H:i" }}</td>
+            <td data-label="Date">{% firstof p.paid_at|date:"d M Y H:i" p.created_at|date:"d M Y H:i" %}</td>
           </tr>
         {% empty %}
           <tr>

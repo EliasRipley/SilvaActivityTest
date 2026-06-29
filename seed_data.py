@@ -7,7 +7,7 @@ import django
 django.setup()
 
 from django.contrib.auth.models import User
-from payments.models import Site, Activity, SiteSenior, COMPANY_WIDE_NAME
+from payments.models import Site, Activity, SiteSenior, ServiceUser, Wallet, AppSetting, COMPANY_WIDE_NAME
 
 # --- Helpers ---
 
@@ -89,6 +89,38 @@ if sonia_site:
     sonia.save()
     SiteSenior.objects.get_or_create(user=sonia, site=sonia_site)
     print(f"  Senior: {sonia_email} / {TEST_PASSWORD}")
+
+# --- Sample account holder (parent/carer) ---
+carer_email = "jane.smith@example.com"
+carer, created = User.objects.get_or_create(
+    username=carer_email.lower(),
+    defaults={"email": carer_email, "first_name": "Jane", "last_name": "Smith"},
+)
+if created:
+    carer.set_password(TEST_PASSWORD)
+    carer.save()
+    Wallet.objects.get_or_create(user=carer, defaults={"balance_pennies": 5000})
+    ServiceUser.objects.get_or_create(
+        account=carer, name="Robert Smith",
+        defaults={"site": sonia_site if sonia_site else None},
+    )
+    print(f"  Account holder: {carer_email} / {TEST_PASSWORD}")
+else:
+    Wallet.objects.get_or_create(user=carer, defaults={"balance_pennies": 5000})
+
+# --- App Settings ---
+AppSetting.objects.get_or_create(
+    key="su_accounts_enabled",
+    defaults={"value": "True"},
+)
+AppSetting.objects.get_or_create(
+    key="wallet_system_enabled",
+    defaults={"value": "False"},
+)
+AppSetting.objects.get_or_create(
+    key="max_deposit_amount",
+    defaults={"value": "100"},
+)
 
 # --- Sample activities (only if none exist) ---
 if not Activity.objects.exists():

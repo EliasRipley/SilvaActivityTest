@@ -5,16 +5,10 @@
   &ndash; {{ site.name }}
 {% endblock %}
 {% block content %}
+{% include "payments/_tabs_senior.html" with active_tab="activities" %}
+
 <div class="row justify-content-center">
   <div class="col-lg-8">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'site_dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'site_manage_activities' %}">Activities</a></li>
-        <li class="breadcrumb-item active">{% if activity %}Edit{% else %}New Activity{% endif %}</li>
-      </ol>
-    </nav>
-
     <h1 class="mb-1">
       {% if activity %}Edit Activity{% else %}Create a New Activity{% endif %}
     </h1>

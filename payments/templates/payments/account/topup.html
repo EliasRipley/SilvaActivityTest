@@ -1,0 +1,36 @@
+{% extends "payments/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Add Funds{% endblock %}
+{% block content %}
+{% include "payments/_tabs_account.html" with active_tab="topup" %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h1 class="mb-1">Add Funds</h1>
+    <p class="text-muted mb-4">Add money to your account balance to use for future activities.</p>
+
+    <div class="card stat-card mb-4" style="background:var(--sc-teal);color:#fff;">
+      <div class="card-body text-center py-3">
+        <div class="small">Current Balance</div>
+        <div class="fs-2 fw-bold">&pound;{{ wallet.balance_pounds|floatformat:2 }}</div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-sc-primary btn-lg">Continue to Payment</button>
+          </div>
+        </form>
+        <p class="text-center text-muted small mt-3">
+          You will be asked to enter your card details on the next page.
+          Payments are processed securely by <strong>Stripe</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

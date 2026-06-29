@@ -1,6 +1,8 @@
 {% extends "payments/base.html" %}
 {% block title %}All Activities{% endblock %}
 {% block content %}
+{% include "payments/_tabs_headoffice.html" with active_tab="activities" %}
+
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h1 class="mb-0">All Activities</h1>
   <a href="{% url 'headoffice_activity_create' %}" class="btn btn-sc-primary">+ New Activity</a>
